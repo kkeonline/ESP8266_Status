@@ -10,21 +10,25 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
-#include <TridentTD_LineNotify.h>
+//#include <TridentTD_LineNotify.h>
+#include <LineMessagingAPI.h>
 
 #define delayTime 50 // Loop delay
 #define wifiTimeout 30000
 #define bright 128 // led pwm brightness 0=On 255=Off
-#define LINE_TOKEN  "xxxxx"
+//#define LINE_TOKEN  "xxxxx"
+const char* LINE_TOKEN = "xxxxx";
+const char* LINE_USER = "xxxxx";
 
-const char* appVersion = "1.0";
+//const char* appVersion = "1.0";
+const char* appVersion = __DATE__ " " __TIME__;
 const char* ssid1 = "SSID";
 const char* password1 = "PASSWD";
 
 const char* OTAname = "ESP8266-01";
-const char* OTApasswd = "123456";
+const char* OTApasswd = "esp8266";
 
-static const char ntpServerName[] = "th.pool.ntp.org";
+static const char ntpServerName[] = "th.pool.ntp.org"; // Thailand server
 const int timeZone = 7; // Bangkok Time
 
 unsigned long lastMillis;          // will store last time LED was updated
@@ -63,7 +67,7 @@ void Blink(){
   ledState=!ledState;
 }
 
-int wifiConnected() {
+bool wifiConnected() {
   return (WiFi.status() == WL_CONNECTED);
 }
 
@@ -211,7 +215,10 @@ void setup() {
   delay(200);
   setSyncProvider(getNtpTime);
   setSyncInterval(30);
+
+  //  LINE.begin(LINE_TOKEN, LINE_USER);
   LINE.setToken(LINE_TOKEN);
+  LINE.setUserID(LINE_USER);
 
   server.on("/", handleRoot);
   server.on("/status", handleStatus);
@@ -220,7 +227,7 @@ void setup() {
   server.begin();
 
   lastMillis = millis();
-  LINE.notify(timeClient.getFormattedTime()+"\r\nRunning IP: " + WiFi.localIP().toString());
+  LINE.notify(timeClient.getFormattedTime()+"\nRunning IP: " + WiFi.localIP().toString());
 }
 
 void loop(){
